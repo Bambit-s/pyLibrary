@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Empire Forge Mini</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #header {
+            height: 60px;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 2px solid #444;
+        }
+        
+        #resources {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        #main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        #sidebar {
+            width: 250px;
+            background: #2a2a2a;
+            padding: 15px;
+            border-right: 2px solid #444;
+            overflow-y: auto;
+        }
+        
+        #gameCanvas {
+            flex: 1;
+            background: #1e2a38;
+        }
+        
+        .button {
+            background: #3a3a3a;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 8px 12px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .button:hover {
+            background: #4a4a4a;
+        }
+        
+        .building-option {
+            padding: 10px;
+            margin: 5px 0;
+            background: #333;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .building-option:hover {
+            background: #444;
+        }
+        
+        .tab {
+            padding: 10px;
+            margin-right: 5px;
+            background: #333;
+            cursor: pointer;
+            display: inline-block;
+        }
+        
+        .tab.active {
+            background: #555;
+        }
+        
+        #tabs {
+            margin-bottom: 10px;
+        }
+        
+        #buildingInfo {
+            margin-top: 20px;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="header">
+            <div id="resources">
+                <div class="resource">🌾 <span id="food">100</span></div>
+                <div class="resource">🌲 <span id="wood">50</span></div>
+                <div class="resource">⛏️ <span id="stone">30</span></div>
+                <div class="resource">💰 <span id="gold">20</span></div>
+            </div>
+        </div>
+        <div id="main">
+            <div id="sidebar">
+                <div id="tabs">
+                    <div class="tab active" data-tab="build">Build</div>
+                    <div class="tab" data-tab="research">Research</div>
+                    <div class="tab" data-tab="military">Military</div>
+                </div>
+                
+                <div id="buildPanel" class="tab-content">
+                    <h3>Buildings</h3>
+                    <div class="building-option" data-building="farm">
+                        <strong>Farm</strong><br>
+                        Cost: 20🌲, 10💰<br>
+                        Produces: 5🌾 per turn
+                    </div>
+                    <div class="building-option" data-building="lumbermill">
+                        <strong>Lumber Mill</strong><br>
+                        Cost: 30🌲, 15💰<br>
+                        Produces: 3🌲 per turn
+                    </div>
+                    <div class="building-option" data-building="quarry">
+                        <strong>Quarry</strong><br>
+                        Cost: 50🌲, 30💰<br>
+                        Produces: 2⛏️ per turn
+                    </div>
+                    <div class="building-option" data-building="barracks">
+                        <strong>Barracks</strong><br>
+                        Cost: 50⛏️, 30💰<br>
+                        Trains military units
+                    </div>
+                    
+                    <div id="buildingInfo" style="display: none;">
+                        <h3>Selected Building</h3>
+                        <div id="selectedBuildingInfo"></div>
+                        <button id="placeBuilding" class="button">Place on Map</button>
+                        <button id="cancelBuilding" class="button">Cancel</button>
+                    </div>
+                </div>
+                
+                <div id="researchPanel" class="tab-content" style="display: none;">
+                    <h3>Technologies</h3>
+                    <div class="technology" data-tech="bronzeAge">
+                        <strong>Bronze Age</strong><br>
+                        Cost: 200💰<br>
+                        Unlocks: Barracks, Spearman
+                    </div>
+                </div>
+                
+                <div id="militaryPanel" class="tab-content" style="display: none;">
+                    <h3>Military</h3>
+                    <div class="unit-option" data-unit="spearman">
+                        <strong>Spearman</strong><br>
+                        Cost: 10🌾, 5💰<br>
+                        Attack: 3, Defense: 2
+                    </div>
+                </div>
+            </div>
+            <canvas id="gameCanvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        const gameState = {
+            resources: {
+                food: 100,
+                wood: 50,
+                stone: 30,
+                gold: 20
+            },
+            buildings: [],
+            units: [],
+            technologies: [],
+            selectedBuilding: null,
+            map: [],
+            era: 'stoneAge',
+            turn: 1
+        };
+
+        // Building Definitions
+        const buildings = {
+            farm: {
+                name: "Farm",
+                size: [1, 1],
+                cost: { wood: 20, gold: 10 },
+                produces: { food: 5 },
+                sprite: '🟩'
+            },
+            lumbermill: {
+                name: "Lumber Mill",
+                size: [1, 1],
+                cost: { wood: 30, gold: 15 },
+                produces: { wood: 3 },
+                sprite: '🟫'
+            },
+            quarry: {
+                name: "Quarry",
+                size: [1, 1],
+                cost: { wood: 50, gold: 30 },
+                produces: { stone: 2 },
+                sprite: '⬜'
+            },
+            barracks: {
+                name: "Barracks",
+                size: [2, 2],
+                cost: { stone: 50, gold: 30 },
+                trains: ["spearman"],
+                sprite: '🟥'
+            }
+        };
+
+        // Unit Definitions
+        const units = {
+            spearman: {
+                name: "Spearman",
+                attack: 3,
+                defense: 2,
+                cost: { food: 10, gold: 5 },
+                sprite: '🔱'
+            }
+        };
+
+        // Technology Definitions
+        const technologies = {
+            bronzeAge: {
+                name: "Bronze Age",
+                cost: { gold: 200 },
+                unlocks: ['barracks', 'spearman']
+            }
+        };
+
+        // Game Canvas Setup
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            const sidebarWidth = document.getElementById('sidebar').offsetWidth;
+            canvas.width = window.innerWidth - sidebarWidth;
+            canvas.height = window.innerHeight - 60; // minus header height
+            drawMap();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Generate Map
+        function generateMap() {
+            const mapSize = 20;
+            gameState.map = [];
+            
+            for (let y = 0; y < mapSize; y++) {
+                gameState.map[y] = [];
+                for (let x = 0; x < mapSize; x++) {
+                    // Start with some basic terrain
+                    const rand = Math.random();
+                    if (rand < 0.1) {
+                        gameState.map[y][x] = { type: 'water', sprite: '💧' };
+                    } else if (rand < 0.3) {
+                        gameState.map[y][x] = { type: 'forest', sprite: '🌲', wood: 50 };
+                    } else if (rand < 0.35) {
+                        gameState.map[y][x] = { type: 'stone', sprite: '🪨', stone: 30 };
+                    } else {
+                        gameState.map[y][x] = { type: 'grass', sprite: '🟩' };
+                    }
+                }
+            }
+            
+            // Add starting area
+            for (let y = 8; y < 12; y++) {
+                for (let x = 8; x < 12; x++) {
+                    gameState.map[y][x] = { type: 'grass', sprite: '🟩', buildable: true };
+                }
+            }
+        }
+
+        // Draw Map
+        function drawMap() {
+            const cellSize = 40;
+            const startX = (canvas.width - gameState.map[0].length * cellSize) / 2;
+            const startY = (canvas.height - gameState.map.length * cellSize) / 2;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            for (let y = 0; y < gameState.map.length; y++) {
+                for (let x = 0; x < gameState.map[y].length; x++) {
+                    const cell = gameState.map[y][x];
+                    const cellX = startX + x * cellSize;
+                    const cellY = startY + y * cellSize;
+                    
+                    // Draw cell background
+                    ctx.fillStyle = getCellColor(cell.type);
+                    ctx.fillRect(cellX, cellY, cellSize, cellSize);
+                    
+                    // Draw cell border
+                    ctx.strokeStyle = '#444';
+                    ctx.strokeRect(cellX, cellY, cellSize, cellSize);
+                    
+                    // Draw cell content
+                    if (cell.sprite) {
+                        ctx.font = '20px Arial';
+                        ctx.fillStyle = '#fff';
+                        ctx.fillText(cell.sprite, cellX + 10, cellY + 25);
+                    }
+                    
+                    // Highlight buildable areas
+                    if (cell.buildable) {
+                        ctx.strokeStyle = '#0f0';
+                        ctx.strokeRect(cellX + 2, cellY + 2, cellSize - 4, cellSize - 4);
+                    }
+                }
+            }
+            
+            // Draw buildings
+            gameState.buildings.forEach(building => {
+                const buildingDef = buildings[building.type];
+                const cellX = startX + building.x * cellSize;
+                const cellY = startY + building.y * cellSize;
+                
+                ctx.fillStyle = getBuildingColor(building.type);
+                ctx.fillRect(cellX, cellY, buildingDef.size[0] * cellSize, buildingDef.size[1] * cellSize);
+                
+                ctx.font = '20px Arial';
+                ctx.fillStyle = '#000';
+                ctx.fillText(buildingDef.sprite, cellX + 10, cellY + 25);
+                
+                // Draw building border
+                ctx.strokeStyle = '#000';
+                ctx.strokeRect(cellX, cellY, buildingDef.size[0] * cellSize, buildingDef.size[1] * cellSize);
+            });
+        }
+        
+        function getCellColor(type) {
+            const colors = {
+                grass: '#3a5a3a',
+                forest: '#2a4a2a',
+                water: '#2a3a5a',
+                stone: '#5a5a5a'
+            };
+            return colors[type] || '#3a3a3a';
+        }
+        
+        function getBuildingColor(type) {
+            const colors = {
+                farm: '#5a8a5a',
+                lumbermill: '#8a5a3a',
+                quarry: '#aaaaaa',
+                barracks: '#8a3a3a'
+            };
+            return colors[type] || '#5a5a5a';
+        }
+
+        // Update Resource Display
+        function updateResourceDisplay() {
+            document.getElementById('food').textContent = gameState.resources.food;
+            document.getElementById('wood').textContent = gameState.resources.wood;
+            document.getElementById('stone').textContent = gameState.resources.stone;
+            document.getElementById('gold').textContent = gameState.resources.gold;
+        }
+
+        // Tab Switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + 'Panel').style.display = 'block';
+            });
+        });
+
+        // Building Selection
+        document.querySelectorAll('.building-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const buildingType = option.dataset.building;
+                const building = buildings[buildingType];
+                
+                // Check if player can afford
+                let canAfford = true;
+                for (const [resource, amount] of Object.entries(building.cost)) {
+                    if (gameState.resources[resource] < amount) {
+                        canAfford = false;
+                        break;
+                    }
+                }
+                
+                if (!canAfford) {
+                    alert(`Not enough resources to build ${building.name}!`);
+                    return;
+                }
+                
+                gameState.selectedBuilding = buildingType;
+                
+                // Show building info
+                document.getElementById('buildingInfo').style.display = 'block';
+                document.getElementById('selectedBuildingInfo').innerHTML = `
+                    <strong>${building.name}</strong><br>
+                    Size: ${building.size[0]}x${building.size[1]}<br>
+                    ${building.produces ? `Produces: ${Object.entries(building.produces).map(([r, a]) => `${a}${getResourceIcon(r)}`).join(', ')}` : ''}
+                    ${building.trains ? `Trains: ${building.trains.join(', ')}` : ''}
+                `;
+            });
+        });
+
+        function getResourceIcon(resource) {
+            const icons = {
+                food: '🌾',
+                wood: '🌲',
+                stone: '⛏️',
+                gold: '💰'
+            };
+            return icons[resource] || '';
+        }
+
+        // Cancel Building
+        document.getElementById('cancelBuilding').addEventListener('click', () => {
+            gameState.selectedBuilding = null;
+            document.getElementById('buildingInfo').style.display = 'none';
+        });
+
+        // Place Building
+        document.getElementById('placeBuilding').addEventListener('click', () => {
+            alert("Click on the map to place the building");
+            canvas.style.cursor = 'pointer';
+        });
+
+        // Canvas Click Handler
+        canvas.addEventListener('click', (e) => {
+            if (!gameState.selectedBuilding) return;
+            
+            const cellSize = 40;
+            const startX = (canvas.width - gameState.map[0].length * cellSize) / 2;
+            const startY = (canvas.height - gameState.map.length * cellSize) / 2;
+            
+            const mouseX = e.clientX - canvas.offsetLeft;
+            const mouseY = e.clientY - canvas.offsetTop;
+            
+            const gridX = Math.floor((mouseX - startX) / cellSize);
+            const gridY = Math.floor((mouseY - startY) / cellSize);
+            
+            // Check if coordinates are valid
+            if (gridX < 0 || gridY < 0 || gridX >= gameState.map[0].length || gridY >= gameState.map.length) {
+                return;
+            }
+            
+            const buildingDef = buildings[gameState.selectedBuilding];
+            
+            // Check if area is buildable
+            let canBuild = true;
+            for (let y = gridY; y < gridY + buildingDef.size[1]; y++) {
+                for (let x = gridX; x < gridX + buildingDef.size[0]; x++) {
+                    if (!gameState.map[y] || !gameState.map[y][x] || !gameState.map[y][x].buildable) {
+                        canBuild = false;
+                        break;
+                    }
+                }
+                if (!canBuild) break;
+            }
+            
+            if (!canBuild) {
+                alert("Can't build here - not enough space or not buildable area!");
+                return;
+            }
+            
+            // Deduct resources
+            for (const [resource, amount] of Object.entries(buildingDef.cost)) {
+                gameState.resources[resource] -= amount;
+            }
+            
+            // Add building
+            gameState.buildings.push({
+                type: gameState.selectedBuilding,
+                x: gridX,
+                y: gridY
+            });
+            
+            // Update display
+            updateResourceDisplay();
+            drawMap();
+            
+            // Reset selection
+            gameState.selectedBuilding = null;
+            document.getElementById('buildingInfo').style.display = 'none';
+            canvas.style.cursor = 'default';
+        });
+
+        // Game Loop
+        function gameLoop() {
+            // Process production
+            gameState.buildings.forEach(building => {
+                const def = buildings[building.type];
+                if (def.produces) {
+                    for (const [resource, amount] of Object.entries(def.produces)) {
+                        gameState.resources[resource] += amount;
+                    }
+                }
+            });
+            
+            // Update display
+            updateResourceDisplay();
+            drawMap();
+            
+            // Next turn
+            gameState.turn++;
+            
+            // Slow down the game loop for a strategy game
+            setTimeout(gameLoop, 5000); // 5 seconds per turn
+        }
+
+        // Initialize Game
+        function initGame() {
+            generateMap();
+            updateResourceDisplay();
+            drawMap();
+            gameLoop();
+        }
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
