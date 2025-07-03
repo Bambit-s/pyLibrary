@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>my_lib</title>
+</head>
+<body>
+    <h1>Library Contents</h1>
+    {% if my_lib %}
+        <p>1</p>
+        <p>First book: {{ my_lib[0] }}</p>
+        <p>Author: {{ my_lib[0][3] }}</p>
+    {% else %}
+        <p>No my_lib data available</p>
+    {% endif %}
+</body>
+</html>
