@@ -3,13 +3,13 @@
 {% block content %}
 <h1 class="mb-4">{{ title }}</h1>
 <div class="row row-cols-1 row-cols-md-2 g-4">
-  {% for isbn, info in books.items() %}
+  {% for book in books %}
     <div class="col">
       <div class="card h-100">
         <div class="card-body">
-          <h5 class="card-title">{{ info.title }}</h5>
-          <p class="card-text">Автор: {{ info.author }}</p>
-          <a href="{{ url_for('show_book', isbn=isbn) }}" class="btn btn-primary">Подробнее</a>
+          <h5 class="card-title">{{ book.title }}</h5>
+          <p class="card-text">Автор: {{ book.author }}</p>
+          <a href="{{url_for('show_book', isbn=book.id)}}" class="btn btn-primary">Подробнее</a>
         </div>
       </div>
     </div>
