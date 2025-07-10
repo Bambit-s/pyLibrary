@@ -1,13 +1,11 @@
 from typing import Dict, List #Python < 3.9
 from abc import ABC, abstractmethod
-import pydoc as pyt
-"""ads"""
+
 
 class Abstract_Book(ABC):
 
     @abstractmethod
     def _borrow_book(self)->None:
-
         pass
     
     @abstractmethod
@@ -47,6 +45,7 @@ class Abstract_Library(ABC):
         pass
 
 class ErrorMixin:
+    
     def BookNotFoundError(self) -> str:
         return "Книга не найдена"
     
@@ -55,19 +54,8 @@ class ErrorMixin:
 
 class Book(Abstract_Book):
 
-     
     def __init__(self, title:str,author:str,year:int,isbn:int)->dict:
-        """_summary_
 
-        Args:
-            title (str): _description_
-            author (str): _description_
-            year (int): _description_
-            isbn (int): _description_
-
-        Returns:
-            dict: _description_
-        """
         self.title : str = title
         self.author : str = author
         self.year : int = year
@@ -152,7 +140,6 @@ class Library(Abstract_Library, User, Book, ErrorMixin):
         if self.books[isbn].is_borrowed:
             return f"Книга {isbn} взята другим пользователем"
         
-        
         user = self.users[user_id]
         book = (self.books)[isbn]
         
@@ -167,13 +154,16 @@ class Library(Abstract_Library, User, Book, ErrorMixin):
         return len(self.users[user_id].borrowed_books)<3
     
     def return_book(self, user_id:int, isbn:int)->str:
+        
         if isbn in self.books and user_id in self.users:
             borrowBook = self.books[isbn]
             user = self.users[user_id]
             borrowBook._return_book()
             user._return_book(borrowBook)
             self.__del_from_borrow_books(isbn)
+            
             return f"Книга {isbn} возвращена"
+        
         return self.BookNotFoundError()
     
     def __del_from_borrow_books(self,isbn):
@@ -190,50 +180,28 @@ class Library(Abstract_Library, User, Book, ErrorMixin):
         return {self.books[book].isbn:self.books[book].__dict__() for book in self.books
                 if (self.books[book].__dict__()['title'] == title or title is None) and
                 (self.books[book].__dict__()['author'] == author or author is None)}
-    
-lib = Library()
-print(lib.add_book("1984", "George Orwell", 1949, "001"))
-print(lib.add_book("King Arthur", "Merlin", 1927, "002"))
-print(lib.add_book("King Arthur", "Merlin", 1927, "002"))
-# print(lib.add_book("1984", "George", 1945, "ISBN-010"))
-print(lib.add_book("Alladin", "Allah", 1999, "003"))
-print(lib.add_book("Prince of Persia", "Unity", 2011, "004"))
-# print(lib.add_book("1984", "Merlin", 1927, "ISBN-005"))
 
-print(lib.add_user("Анна", 1))
-print(lib.add_user("Анна", 1))
+# lib = Library()
 
-# print(lib.add_user("Kate", "user-2"))
-# print(lib.add_user("Kate", "user-2"))
+# print(lib.add_book("1984", "George Orwell", 1949, "001"))
+# print(lib.add_book("King Arthur", "Merlin", 1927, "002"))
+# print(lib.add_book("King Arthur", "Merlin", 1927, "002"))
+# # print(lib.add_book("1984", "George", 1945, "ISBN-010"))
+# print(lib.add_book("Alladin", "Allah", 1999, "003"))
+# print(lib.add_book("Prince of Persia", "Unity", 2011, "004"))
+# # print(lib.add_book("1984", "Merlin", 1927, "ISBN-005"))
 
-print(lib.borrow_book(1, "001"))
-print(lib.borrow_book(1, "002"))
-print(lib.borrow_book(1, "003"))
-print(lib.borrow_book(1, "004"))
-print(lib.return_book(1, "001"))
-print(lib.return_book(1, "002"))
-print(lib.return_book(1, "003"))
+# print(lib.add_user("Анна", 1))
+# print(lib.add_user("Анна", 1))
 
-print(lib.add_book.__doc__)
-# print(lib.borrow_book("user-1", "ISBN-002"))
-# print(lib.users['user-1'])
+# # print(lib.add_user("Kate", "user-2"))
+# # print(lib.add_user("Kate", "user-2"))
 
-# # print(lib.borrow_book("user-1", "ISBN-003"))
-
-# # # print(lib.search_books("1984"))
-# print(lib.list_available_books())
-# print(lib.list_borrowed_books())
-
-# print(lib.search_books("Alladin"))
-# print(lib.return_book("user-1", "ISBN-001"))
-# print(lib.users['user-1'])
-# print(lib.return_book("user-1", "ISBN-002"))
-# print(lib.users['user-1'])
-# # print(lib.return_book("user-1", "ISBN-001"))
-# # print(lib.users)
-# # print(lib.borrow_book("user-1", "ISBN-002"))
-# # print(lib.users['user-1'])
-# # # print(lib.borrow_book("user-1", "ISBN-002"))
-# # # print(lib.borrow_book("user-2", "ISBN-005"))
-# # # print(lib.borrow_book("user-1", "ISBN-002"))
+# print(lib.borrow_book(1, "001"))
+# print(lib.borrow_book(1, "002"))
+# print(lib.borrow_book(1, "003"))
+# print(lib.borrow_book(1, "004"))
+# print(lib.return_book(1, "001"))
+# print(lib.return_book(1, "002"))
+# print(lib.return_book(1, "003"))
 

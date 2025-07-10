@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+
+<form method="post">
+    <h2>Add New Book</h2>
+    <label for="title">Title:</label>
+    <input name="title" type="text"><br>
+
+    <label for="author">Author:</label>
+    <input name="author" type="text"><br>
+
+    <label for="year">Year:</label>
+    <input name="year" type="text"><br>
+
+    <label for="isbn">ISBN:</label>
+    <input name="isbn" type="text"><br>
+
+    <button>Send</button>
+
+</form>
+
+{% endblock %}
