@@ -1,22 +1,42 @@
 {% extends 'base.html' %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-<form method="post">
-    <h2>Add New Book</h2>
-    <label for="title">Title:</label>
-    <input name="title" type="text"><br>
-    
-    <label for="author">Author:</label>
-    <input name="author" type="text"><br>
-
-    <label for="year">Year:</label>
-    <input name="year" type="text"><br>
-
-    <label for="isbn">ISBN:</label>
-    <input name="isbn" type="text"><br>
-
-    <button>Send</button>
-
+<h2>Add New Book</h2>
+<form method="POST" enctype="multipart/form-data">
+    {{form.hidden_tag()}}
+    <div>
+        {{form.title.label}}
+        {{form.title}}
+    </div>
+    <div>
+        {{form.author.label}}
+        {{form.author}}
+    </div>
+    <div>
+        {{form.year.label}}
+        {{form.year}}
+    </div>
+    <div>
+        {{form.isbn.label}}
+        {{form.isbn}}
+    </div>
+    <div>
+        {{form.description.label}}
+        {{form.description}}
+    </div>
+    <div>
+        {{form.genres.label}}
+        {{form.genres}}
+    </div>
+    <div>
+        {{form.files_imgs.label}}
+        {{form.files_imgs()}}
+    </div>
+    <div>
+        {{form.files_book.label}}
+        {{form.files_book()}}
+    </div>
+    <button type="submit">{{ form.submit.label.text }}</button>
 </form>
 
 {% endblock %}

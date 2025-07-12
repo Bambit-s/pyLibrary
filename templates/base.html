@@ -19,24 +19,36 @@
       <div class="collapse navbar-collapse" id="navbarContent">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link {% if request.path == url_for('show_library') %}active{% endif %}" href="{{url_for('show_library')}}">Our library</a>
+            <a class="nav-link {% if request.path == url_for('show_library') %}active{% endif %}"
+              href="{{url_for('show_library')}}">Our library</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.path == url_for('about') %}active{% endif %}" href="{{url_for('about')}}">About Library</a>
+            <a class="nav-link {% if request.path == url_for('about') %}active{% endif %}"
+              href="{{url_for('about')}}">About Library</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.path == url_for('contacts') %}active{% endif %}" href="{{url_for('contacts')}}">Contacts</a>
+            <a class="nav-link {% if request.path == url_for('contacts') %}active{% endif %}"
+              href="{{url_for('contacts')}}">Contacts</a>
           </li>
         </ul>
       </div>
       <ul class="navbar-nav ms-auto">
         {% if current_user.is_authenticated %}
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle {% if request.path == url_for('profile') %}active{% endif %}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="nav-link dropdown-toggle {% if request.path == url_for('profile') %}active{% endif %}" role="button"
+            data-bs-toggle="dropdown" aria-expanded="false">
             👤 {{ current_user.name }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+            {% if current_user.role.value == 'admin'%}
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item" href="{{url_for('add_new_book')}}">New book</a>
+            </li>
+            {% endif %}
             <li>
               <hr class="dropdown-divider">
             </li>

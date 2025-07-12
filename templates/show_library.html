@@ -2,17 +2,33 @@
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
 <h1 class="mb-4">{{ title }}</h1>
-<div class="row row-cols-1 row-cols-md-2 g-4">
-  {% for book in books %}
+<div class="container">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for book in books %}
     <div class="col">
       <div class="card h-100">
+        {% if book.files_imgs %}
+          <div class="card-img-top-container" style="height: 200px; overflow: hidden;">
+            <img src="{{ url_for('static', filename='uploads_imgs/' + book.files_imgs[0].filename) }}" 
+                 class="card-img-top h-200 object-fit-cover" 
+                 alt="{{ book.title }}">
+          </div>
+        {% endif %}
         <div class="card-body">
           <h5 class="card-title">{{ book.title }}</h5>
-          <p class="card-text">Автор: {{ book.author }}</p>
-          <a href="{{url_for('show_book', isbn=book.id)}}" class="btn btn-primary">Подробнее</a>
+          <p class="card-text">
+            <small class="text-muted">Author: {{ book.author }}</small><br>
+            <small class="text-muted">Year: {{ book.year }}</small>
+          </p>
+        </div>
+        <div class="card-footer bg-transparent">
+          <a href="{{ url_for('show_book', isbn=book.id) }}" class="btn btn-sm btn-outline-primary">
+            See more
+          </a>
         </div>
       </div>
     </div>
-  {% endfor %}
+    {% endfor %}
+  </div>
 </div>
 {% endblock %}
