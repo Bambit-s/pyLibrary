@@ -49,7 +49,7 @@ def test_borrow_book1(library_with_user:object)->str:
 # import my_library.my_library as lib
 
 # @pytest.mark.parametrize("values1, values2, values3, values4, expected_result",[
-#     ("1984", "George Orwell", 1949, "ISBN-001", "Книга добавлена"),
+#     ("1984", "George Orwell", 1949, " ISBN-001", "Книга добавлена"),
 # ])
 # def testLibraryaddbook(values1,values2,values3,values4,expected_result):
 #     test = lib.Library()

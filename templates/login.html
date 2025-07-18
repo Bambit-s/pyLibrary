@@ -8,6 +8,13 @@
         {{ form.email.label }}<br>
         {{ form.email(size=32) }}
     </div>
+    {% if form.email.errors %}
+    <div class="invalid-feedback" style="display: block;">
+        {% for error in form.email.errors %}
+        {{ error }}
+        {% endfor %}
+    </div>
+    {% endif %}
     <div>
         {{ form.password.label }}<br>
         {{ form.password(size=32) }}

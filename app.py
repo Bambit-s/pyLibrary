@@ -6,6 +6,7 @@ from flask import send_from_directory, abort
 from forms import *
 from flask_migrate import Migrate
 from connection import Database
+from registration_validate import RegistrationValidate
 from dbmodels import db, Book,User,Genres,BookFile,BookImage
 import os
 from werkzeug.utils import secure_filename
@@ -72,7 +73,6 @@ def add_new_book():
             book_path = os.path.join("static/uploads_books", book_filename)
             form.files_book.data.save(book_path)
             
-        print(cover, book_file) 
         db.session.add(new_book)
         db.session.commit()
     return render_template('add_book.html', title = 'Add new book', form=form)
@@ -144,10 +144,10 @@ def register():
         new_user = User(name=form.name.data,
                         email=form.email.data,
                         password_hash=form.password.data,)
-        
         new_user.set_password(new_user.password_hash)
         db.session.add(new_user)
         db.session.commit()
+        return render_template('login.html', form=form)
     return render_template('register.html', title='Registration page', form=form)
     
 if __name__ == '__main__':
